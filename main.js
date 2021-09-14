@@ -190,7 +190,7 @@ async function storeData(storeName,strId,termId,programId,depName,courseName,J,f
             console.log(err);
         }
         console.log('storeData Saved');
-        wait();
+        // wait();
     });
     let cmdata = store_data;
     csvToJsonData()
