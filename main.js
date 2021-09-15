@@ -175,7 +175,7 @@ function generateTimeStamp(min, max) {
 }
 
 async function storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData){
-    console.log("Sending 20-data of ",storeName,", ",depName,", ",courseName," and section send to get course and book details.");
+    console.log("Sending 28-data of ",storeName,", ",storeId,", ",termId,", ",depName,", ",courseName," and section send to get course and book details.");
     //console.log('fullData',fullData);
     const newData = JSON.stringify(fullData);
     let store_data = await getCourses(storeId,termId,programId,newData);
