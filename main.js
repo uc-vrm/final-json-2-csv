@@ -141,7 +141,6 @@ async function getDepartment(storeId,termId) {
     })
     const ret = await d.json();  
     console.log('dpartment');
-    // console.log(ret.finalDDCSData?.division[0]?.department);
     let dep = ret.finalDDCSData?.division[0]?.department;
     console.log(dep);
     return dep;  
@@ -175,17 +174,17 @@ function generateTimeStamp(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-async function storeData(storeName,strId,termId,programId,depName,courseName,J,fullData){
+async function storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData){
     console.log("Sending 20-data of ",storeName,", ",depName,", ",courseName," and section send to get course and book details.");
     //console.log('fullData',fullData);
     const newData = JSON.stringify(fullData);
-    let store_data = await getCourses(strId,termId,programId,newData);
+    let store_data = await getCourses(storeId,termId,programId,newData);
     // console.log('course details and books of given data.', store_data);
     const data = JSON.stringify(store_data);
     let cmdata = store_data;
     console.log('course details and books of given data.', store_data);
     // const data = JSON.stringify(value);
-    fs.writeFile('./bkstr/bkstr_'+storeName+'_'+strId+'_'+termId+'_'+depName+'_'+courseName+'_'+J+'.json',data, function (err) {
+    fs.writeFile('./bkstr/bkstr_'+storeName+'_'+storeId+'_'+termId+'_'+depName+'_'+courseName+'_'+J+'.json',data, function (err) {
         if (err) { 
             console.log(err);
         }
