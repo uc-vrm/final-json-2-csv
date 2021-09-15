@@ -45,7 +45,7 @@ const fetchData = async() => {
                     exit;
                 }
                 var depFile = JSON.stringify(department);
-                fs.writeFile('./bkstr_deps/bkstr_'+storeName+'_'+storeId+'_'+termId+'_department.json',depFile, function (err) {
+                fs.writeFile('./bkstr_deps/bkstr_'+storeName.split(" ").join("")+'_'+storeId.split(" ").join("")+'_'+termId.split(" ").join("")+'_department.json',depFile, function (err) {
                     if (err) throw err;
                     console.log('Department Saved');
                 });
@@ -165,8 +165,8 @@ async function getCourses(storeId,termId,programId,fullData) {
 function wait(ms){
     ms = ms || false;
     if (!ms) {
-        ms = generateTimeStamp(10000, 20000);
-        ms = generateTimeStamp(8000, 18000);
+        ms = generateTimeStamp(18000, 26000);
+        ms = generateTimeStamp(20000, 30000);
     }
     var start = new Date().getTime();
     var end = start;
@@ -189,7 +189,7 @@ async function storeData(storeName,storeId,termId,programId,depName,courseName,J
     let cmdata = store_data;
     console.log('course details and books of given data.', store_data);
     // const data = JSON.stringify(value);
-    fs.writeFile('./bkstr/bkstr_'+storeName+'_'+storeId+'_'+termId+'_'+depName+'_'+courseName+'_'+J+'.json',data, function (err) {
+    fs.writeFile('./bkstr/bkstr_'+storeName.split(" ").join("")+'_'+storeId.split(" ").join("")+'_'+termId.split(" ").join("")+'_'+depName.split(" ").join("")+'_'+courseName.split(" ").join("")+'_'+J+'.json',data, function (err) {
         if (err) { 
             console.log(err);
         }
