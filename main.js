@@ -120,15 +120,20 @@ async function getTerm(storeId) {
     let camp = ret.finalData?.campus;
     // console.log(ret);
     // console.log(camp);
-    camp.forEach(function(val,index){
-        val.program[0].term.forEach(function(val2,index2){
-            let termId = val2.termId;
-            let programId = val.program[0].programId;
-            termData.push({termId,programId});
+    if(!camp || typeof camp == "undefined"){
+        console.log("no campus or you are blocked");
+        return;
+    }else{
+        camp.forEach(function(val,index){
+            val.program[0].term.forEach(function(val2,index2){
+                let termId = val2.termId;
+                let programId = val.program[0].programId;
+                termData.push({termId,programId});
+            })
         })
-    })
-    // console.log(termData);
-    return termData;  
+        // console.log(termData);
+        return termData;  
+    } 
 }
 
 async function getDepartment(storeId,termId) {
