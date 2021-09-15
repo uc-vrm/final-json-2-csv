@@ -165,8 +165,8 @@ async function getCourses(storeId,termId,programId,fullData) {
 function wait(ms){
     ms = ms || false;
     if (!ms) {
-        ms = generateTimeStamp(2000, 5000);
-        ms = generateTimeStamp(2000, 6000);
+        ms = generateTimeStamp(10000, 20000);
+        ms = generateTimeStamp(8000, 18000);
     }
     var start = new Date().getTime();
     var end = start;
