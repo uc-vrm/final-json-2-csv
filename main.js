@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import { exit } from 'process';
 import { compileFunction } from 'vm';
 import express from "express";
-
 // Define "require"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -11,9 +10,9 @@ const require = createRequire(import.meta.url);
 // json to csv modules
 const csvToJsonData = require("csvtojson");
 const jsonToCsvData = require("json2csv").parse;
-// "academyofourladypeacestore","acadiastore","adelphistore"
+// alabamaamstore,alabamastatestore,alamanceccstore,alamedastore,alaskafairbanksstore,albanystatestore,albanystore,alcornstatestore,algomastore
 //https://svc.bkstr.com/store/config?storeName=sienastore
-const storeNames = ["academyofourladypeacestore","acadiastore","adelphistore"];
+const storeNames = ["alabamaamstore","alabamastatestore","alamanceccstore","alamedastore","alaskafairbanksstore","albanystatestore","albanystore","alcornstatestore","algomastore"];
 const fetchData = async() => {
     try{
         for(let i=0; i<storeNames.length; i++){
@@ -70,7 +69,7 @@ const fetchData = async() => {
                                 try{
                                     // get and store course data
                                     console.log('IN Store Data Function');
-                                    storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
+                                    await storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
                                     k=0;
                                     fullData = [];
                                 }catch(err){
@@ -83,7 +82,7 @@ const fetchData = async() => {
                 if(k>0){
                     J++;
                     console.log('IN Store Data Function');
-                    storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
+                    await storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
                 }
             }
         }
@@ -162,8 +161,8 @@ async function getCourses(storeId,termId,programId,fullData) {
 function wait(ms){
     ms = ms || false;
     if (!ms) {
-        ms = generateTimeStamp(2000, 10000);
-        ms = generateTimeStamp(2000, 8000);
+        ms = generateTimeStamp(2000, 5000);
+        ms = generateTimeStamp(2000, 6000);
     }
     var start = new Date().getTime();
     var end = start;
@@ -183,6 +182,7 @@ async function storeData(storeName,strId,termId,programId,depName,courseName,J,f
     let store_data = await getCourses(strId,termId,programId,newData);
     // console.log('course details and books of given data.', store_data);
     const data = JSON.stringify(store_data);
+    let cmdata = store_data;
     console.log('course details and books of given data.', store_data);
     // const data = JSON.stringify(value);
     fs.writeFile('./bkstr/bkstr_'+storeName+'_'+strId+'_'+termId+'_'+depName+'_'+courseName+'_'+J+'.json',data, function (err) {
@@ -190,93 +190,99 @@ async function storeData(storeName,strId,termId,programId,depName,courseName,J,f
             console.log(err);
         }
         console.log('storeData Saved');
-        // wait();
+        wait();
     });
-    let cmdata = store_data;
-    csvToJsonData()
-    .fromFile("./csv/bkstr.csv")
-    .then((source) => {
-        cmdata.forEach(function (val, index) {
-            const row = getBlankRow();
-            // console.log(val["storeId"]);
-            row["storeid"] = val.storeId;
-            row["storenumber"] = val.storeNumber;
-            row["storedisplayname"] = val.storeDisplayName;
-            // console.log(row);
-            if(!val.courseSectionDTO){
-              source.push(row);
-            }else{
-              val.courseSectionDTO.forEach(function (val2, index2) {
-                const row1 = getBlankRow();
-                row1["storeid"] = val.storeId;
-                row1["storenumber"] = val.storeNumber;
-                row1["storedisplayname"] = val.storeDisplayName;
-                row1["termid"] = val2.termId;
-                row1["termname"] = val2.termName;
-                row1["termnumber"] = val2.termNumber;
-                row1["programid"] = val2.programId;
-                row1["programname"] = val2.programName;
-                row1["campusid"] = val2.campusId;
-                row1["campusname"] = val2.campusName;
-                row1["department"] = val2.department;
-                row1["departmentname"] = val2.departmentName;
-                row1["division"] = val2.division;
-                row1["divisionname"] = val2.divisionName;
-                row1["courseid"] = val2.courseId;
-                row1["coursename"] = val2.courseName;
-                row1["section"] = val2.section;
-                row1["sectionname"] = val2.sectionName;
-                row1["instructor"] = val2.instructor;
-                row1["schoolname"] = val2.institutionName;
+    if(!cmdata || cmdata.length<1){
+        console.log("course is empty");
+    }else{
+        csvToJsonData()
+        .fromFile("./csv/bkstr.csv")
+        .then((source) => {
+            for(let i=0; i<cmdata.length; i++) {
+                const row = getBlankRow();
+                // console.log(val["storeId"]);
+                row["storeid"] = cmdata[i].storeId;
+                row["storenumber"] = cmdata[i].storeNumber;
+                row["storedisplayname"] = cmdata[i].storeDisplayName;
                 // console.log(row);
-                if(!val2.courseMaterialResultsList){
-                  source.push(row1);
+                if(!cmdata[i].courseSectionDTO){
+                  source.push(row);
                 }else{
-                  val2.courseMaterialResultsList.forEach(function(val3,index3){
-                    const row2 = getBlankRow();
-                    row2["storeid"] = val.storeId;
-                    row2["storenumber"] = val.storeNumber;
-                    row2["storedisplayname"] = val.storeDisplayName;
-                    row2["termid"] = val2.termId;
-                    row2["termname"] = val2.termName;
-                    row2["termnumber"] = val2.termNumber;
-                    row2["programid"] = val2.programId;
-                    row2["programname"] = val2.programName;
-                    row2["campusid"] = val2.campusId;
-                    row2["campusname"] = val2.campusName;
-                    row2["department"] = val2.department;
-                    row2["departmentname"] = val2.departmentName;
-                    row2["division"] = val2.division;
-                    row2["divisionname"] = val2.divisionName;
-                    row2["courseid"] = val2.courseId;
-                    row2["coursename"] = val2.courseName;
-                    row2["section"] = val2.section;
-                    row2["sectionname"] = val2.sectionName;
-                    row2["instructor"] = val2.instructor;
-                    row2["schoolname"] = val2.institutionName;
-                    row2["cmid"] = val3.cmId;
-                    row2["mtcid"] = val3.mtcId;
-                    row2["bookimage"] = val3.bookImage;
-                    row2["title"] = val3.title;
-                    row2["edition"] = val3.edition;
-                    row2["author"] = val3.author;
-                    row2["isbn"] = val3.isbn;
-                    row2["materialtype"] = val3.materialType;
-                    row2["requirementtype"] = val3.requirementType;
-                    row2["publisher"] = val3.publisher;
-                    row2["publishercode"] = val3.publisherCode;
-                    row2["productcatentryid"] = val3.productCatentryId;
-                    row2["copyrightyear"] = val3.copyRightYear||"";
-                    row2["pricerangedisplay"] = val3.priceRangeDisplay;
-                    source.push(row2);
-                  })
+                    let courseSection = cmdata[i].courseSectionDTO;
+                    for(let j=0; j<courseSection.length; j++){
+                        const row1 = getBlankRow();
+                        row1["storeid"] = cmdata[i].storeId;
+                        row1["storenumber"] = cmdata[i].storeNumber;
+                        row1["storedisplayname"] = cmdata[i].storeDisplayName;
+                        row1["termid"] = courseSection[j].termId;
+                        row1["termname"] = courseSection[j].termName;
+                        row1["termnumber"] = courseSection[j].termNumber;
+                        row1["programid"] = courseSection[j].programId;
+                        row1["programname"] = courseSection[j].programName;
+                        row1["campusid"] = courseSection[j].campusId;
+                        row1["campusname"] = courseSection[j].campusName;
+                        row1["department"] = courseSection[j].department;
+                        row1["departmentname"] = courseSection[j].departmentName;
+                        row1["division"] = courseSection[j].division;
+                        row1["divisionname"] = courseSection[j].divisionName;
+                        row1["courseid"] = courseSection[j].courseId;
+                        row1["coursename"] = courseSection[j].courseName;
+                        row1["section"] = courseSection[j].section;
+                        row1["sectionname"] = courseSection[j].sectionName;
+                        row1["instructor"] = courseSection[j].instructor;
+                        row1["schoolname"] = courseSection[j].institutionName;
+                        // console.log(row);
+                    if(!courseSection[j].courseMaterialResultsList){
+                      source.push(row1);
+                    }else{
+                        let courseMaterialResults = courseSection[j].courseMaterialResultsList;
+                        for(let k=0; k<courseMaterialResults.length; k++){
+                            const row2 = getBlankRow();
+                            row2["storeid"] = cmdata[i].storeId;
+                            row2["storenumber"] = cmdata[i].storeNumber;
+                            row2["storedisplayname"] = cmdata[i].storeDisplayName;
+                            row2["termid"] = courseSection[j].termId;
+                            row2["termname"] = courseSection[j].termName;
+                            row2["termnumber"] = courseSection[j].termNumber;
+                            row2["programid"] = courseSection[j].programId;
+                            row2["programname"] = courseSection[j].programName;
+                            row2["campusid"] = courseSection[j].campusId;
+                            row2["campusname"] = courseSection[j].campusName;
+                            row2["department"] = courseSection[j].department;
+                            row2["departmentname"] = courseSection[j].departmentName;
+                            row2["division"] = courseSection[j].division;
+                            row2["divisionname"] = courseSection[j].divisionName;
+                            row2["courseid"] = courseSection[j].courseId;
+                            row2["coursename"] = courseSection[j].courseName;
+                            row2["section"] = courseSection[j].section;
+                            row2["sectionname"] = courseSection[j].sectionName;
+                            row2["instructor"] = courseSection[j].instructor;
+                            row2["schoolname"] = courseSection[j].institutionName;
+                            row2["cmid"] = courseMaterialResults[k].cmId;
+                            row2["mtcid"] = courseMaterialResults[k].mtcId;
+                            row2["bookimage"] = courseMaterialResults[k].bookImage;
+                            row2["title"] = courseMaterialResults[k].title;
+                            row2["edition"] = courseMaterialResults[k].edition;
+                            row2["author"] = courseMaterialResults[k].author;
+                            row2["isbn"] = courseMaterialResults[k].isbn;
+                            row2["materialtype"] = courseMaterialResults[k].materialType;
+                            row2["requirementtype"] = courseMaterialResults[k].requirementType;
+                            row2["publisher"] = courseMaterialResults[k].publisher;
+                            row2["publishercode"] = courseMaterialResults[k].publisherCode;
+                            row2["productcatentryid"] = courseMaterialResults[k].productCatentryId;
+                            row2["copyrightyear"] = courseMaterialResults[k].copyRightYear||"";
+                            row2["pricerangedisplay"] = courseMaterialResults[k].priceRangeDisplay;
+                            source.push(row2);
+                        }
+                    }
+                  }
                 }
-              });
             }
+            const csv = jsonToCsvData(source,{fields:["storeid","storenumber","storedisplayname","termid","termname","termnumber","programid","programname","campusid","campusname","department","departmentname","division","divisionname","courseid","coursename","section","sectionname","instructor","schoolname","cmid","mtcid","bookimage","title","edition","author","isbn","materialtype","requirementtype","publisher","publishercode","productcatentryid","copyrightyear","pricerangedisplay"]});
+            fs.writeFileSync("./csv/bkstr.csv",csv);
+            console.log("saved data to in csv");
         });
-        const csv = jsonToCsvData(source,{fields:["storeid","storenumber","storedisplayname","termid","termname","termnumber","programid","programname","campusid","campusname","department","departmentname","division","divisionname","courseid","coursename","section","sectionname","instructor","schoolname","cmid","mtcid","bookimage","title","edition","author","isbn","materialtype","requirementtype","publisher","publishercode","productcatentryid","copyrightyear","pricerangedisplay"]});
-        fs.writeFileSync("./csv/bkstr.csv",csv);
-    });
+    }
 }
 
 function getHeaderString()
