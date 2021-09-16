@@ -6,13 +6,18 @@ import express from "express";
 // Define "require"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
 // json to csv modules
 const csvToJsonData = require("csvtojson");
 const jsonToCsvData = require("json2csv").parse;
+// "academyofourladypeacestore","acadiastore","adelphistore"
 // alabamaamstore,alabamastatestore,alamanceccstore,alamedastore,alaskafairbanksstore,albanystatestore,albanystore,alcornstatestore,algomastore
-//https://svc.bkstr.com/store/config?storeName=sienastore
-const storeNames = ["alabamaamstore","alabamastatestore","alamanceccstore","alamedastore","alaskafairbanksstore","albanystatestore","albanystore","alcornstatestore","algomastore"];
+//https://svc.bkstr.com/store/config?storeName=sienastore  
+
+// babsonstore baptisthsustore barrylawstore  ,"barstowccstore"
+
+const storeNames = ["bellevuestore",
+// "bemidjistatestore"
+];
 const fetchData = async() => {
     try{
         for(let i=0; i<storeNames.length; i++){
@@ -20,10 +25,10 @@ const fetchData = async() => {
             let strId = await getStore(storeName);
             let storeId = strId.storeId;
             let J = 0;
-            if(typeof storeId == undefined)
+            if(typeof storeId == "undefined")
             {
                 console.log("blocked");
-                exit;
+                process.exit(0);
             }
             console.log(storeId);
             let term_id = await getTerm(storeId);
@@ -31,18 +36,18 @@ const fetchData = async() => {
                 console.log(term_id[j]);
                 let termId = term_id[j].termId;
                 let programId = term_id[j].programId;
-                if(typeof termId == undefined)
+                if(typeof termId == "undefined")
                 {
                     console.log("blocked");
-                    exit;
+                    process.exit(0);
                 }
                 let department = await getDepartment(storeId,termId);
                 let depName;
                 let courseName;
-                if(typeof department == undefined)
+                if(typeof department == "undefined")
                 {
                     console.log("blocked");
-                    exit;
+                    process.exit(0);
                 }
                 var depFile = JSON.stringify(department);
                 fs.writeFile('./bkstr_deps/bkstr_'+storeName.split(" ").join("")+'_'+storeId.split(" ").join("")+'_'+termId.split(" ").join("")+'_department.json',depFile, function (err) {
@@ -61,20 +66,22 @@ const fetchData = async() => {
                         for(let a=0; a<sections.length; a++){
                             let section = sections[a].sectionName;
                             let course = {"secondaryvalues":depName+"/"+courseName+"/"+section,"divisionDisplayName":"","departmentDisplayName":depName,"courseDisplayName":courseName,"sectionDisplayName":section};
-                            if(k<28){
+                            if(k<20){
                                 fullData.push(course);
                                 k++;
                             }else{
                                 J++;
-                                try{
-                                    // get and store course data
-                                    console.log('IN Store Data Function');
-                                    await storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
-                                    k=0;
-                                    fullData = [];
-                                }catch(err){
-                                    console.log(err);
+                                if(J>70){
+                                    try{
+                                        // get and store course data
+                                        console.log('IN Store Data Function');
+                                        await storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData);
+                                    }catch(err){
+                                        console.log(err);
+                                    }
                                 }
+                                k=0;
+                                fullData = [];
                             }
                         }
                     } 
@@ -94,7 +101,7 @@ const fetchData = async() => {
 fetchData();
 //get storeId from link of arrays.
 async function getStore(storeName) {
-    // wait();
+    wait();
     const str =  await fetch(`https://svc.bkstr.com/store/config?storeName=${storeName}`, {
         method: 'GET',
         mode: 'cors',
@@ -118,11 +125,9 @@ async function getTerm(storeId) {
     var termData = [];
     console.log('term id and program id');
     let camp = ret.finalData?.campus;
-    // console.log(ret);
-    // console.log(camp);
     if(!camp || typeof camp == "undefined"){
         console.log("no campus or you are blocked");
-        return;
+        process.exit(0);
     }else{
         camp.forEach(function(val,index){
             val.program[0].term.forEach(function(val2,index2){
@@ -133,7 +138,7 @@ async function getTerm(storeId) {
         })
         // console.log(termData);
         return termData;  
-    } 
+    }
 }
 
 async function getDepartment(storeId,termId) {
@@ -146,6 +151,7 @@ async function getDepartment(storeId,termId) {
     })
     const ret = await d.json();  
     console.log('dpartment');
+    // console.log(ret.finalDDCSData?.division[0]?.department);
     let dep = ret.finalDDCSData?.division[0]?.department;
     console.log(dep);
     return dep;  
@@ -163,10 +169,12 @@ async function getCourses(storeId,termId,programId,fullData) {
 }
 
 function wait(ms){
+    return;
     ms = ms || false;
     if (!ms) {
-        ms = generateTimeStamp(18000, 26000);
-        ms = generateTimeStamp(20000, 30000);
+        // ms = generateTimeStamp(20000, 30000);
+    
+        ms = generateTimeStamp(2000, 4000);
     }
     var start = new Date().getTime();
     var end = start;
@@ -180,13 +188,18 @@ function generateTimeStamp(min, max) {
 }
 
 async function storeData(storeName,storeId,termId,programId,depName,courseName,J,fullData){
-    console.log("Sending 28-data of ",storeName,", ",storeId,", ",termId,", ",depName,", ",courseName," and section send to get course and book details.");
+    console.log("Sending 20-data of ",storeName,", ",storeId,", ",termId,", ",depName,", ",courseName," and section send to get course and book details.");
     //console.log('fullData',fullData);
     const newData = JSON.stringify(fullData);
     let store_data = await getCourses(storeId,termId,programId,newData);
     // console.log('course details and books of given data.', store_data);
+    // let storeId = trim(storeId);
     const data = JSON.stringify(store_data);
     let cmdata = store_data;
+    if(cmdata.blockScript){
+        console.log("you are blocked");
+        process.exit(0);
+    }
     console.log('course details and books of given data.', store_data);
     // const data = JSON.stringify(value);
     fs.writeFile('./bkstr/bkstr_'+storeName.split(" ").join("")+'_'+storeId.split(" ").join("")+'_'+termId.split(" ").join("")+'_'+depName.split(" ").join("")+'_'+courseName.split(" ").join("")+'_'+J+'.json',data, function (err) {
@@ -194,7 +207,7 @@ async function storeData(storeName,storeId,termId,programId,depName,courseName,J
             console.log(err);
         }
         console.log('storeData Saved');
-        wait();
+        // wait();
     });
     if(!cmdata || cmdata.length<1){
         console.log("course is empty");
@@ -284,13 +297,12 @@ async function storeData(storeName,storeId,termId,programId,depName,courseName,J
             }
             const csv = jsonToCsvData(source,{fields:["storeid","storenumber","storedisplayname","termid","termname","termnumber","programid","programname","campusid","campusname","department","departmentname","division","divisionname","courseid","coursename","section","sectionname","instructor","schoolname","cmid","mtcid","bookimage","title","edition","author","isbn","materialtype","requirementtype","publisher","publishercode","productcatentryid","copyrightyear","pricerangedisplay"]});
             fs.writeFileSync("./csv/bkstr.csv",csv);
-            console.log("saved data to in csv");
+            console.log("saved json data in csv");
         });
     }
 }
 
-function getHeaderString()
-{
+function getHeaderString() {
     return  {
         'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
